@@ -108,6 +108,9 @@ static void config_gpio(void)
 	/* SPI1 GPIO config: MISO/PB14 */
 	gpio_init(GPIOB, GPIO_MODE_IN_FLOATING, GPIO_OSPEED_50MHZ, GPIO_PIN_14);
 
+	// RST_N of ymf825 board
+	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_8);
+
 	// LED
 	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_2);
 }
