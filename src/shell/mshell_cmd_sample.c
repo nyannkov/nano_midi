@@ -25,12 +25,11 @@
 #include "mshell_cmd.h"
 #include "midi_cdc_core.h"
 
-typedef int (*pf_command_t)(int argc, char *argv[]);
 
 typedef struct
 {
   const char *label;
-  pf_command_t command;
+  int (*command)(int argc, char *argv[]);
 } command_table_t;
 
 static int cmd_koncha(int argc, char *argv[]);
