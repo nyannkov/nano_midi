@@ -24,30 +24,6 @@
 
 #include "midi.h"
 
-
-typedef struct _MIDI_Channel_Message_Buffer {
-    uint8_t msg0; // status byte
-    uint8_t msg1; // data byte 1
-    uint8_t msg2; // data byte 2
-    uint8_t pad;  // padding
-}MIDI_Channel_Message_Buffer_t;
-
-typedef struct _MIDI_System_Exclusive_Buffer {
-	uint8_t msg[MAX_SYS_EX_BUF_SIZE];
-	size_t	len;
-}MIDI_System_Exclusive_Buffer_t;
-
-typedef enum _Parse_MIDI_Message_State {
-	PARSE_MIDI_IDLE = 0,
-	PARSE_MIDI_CH_MSG_1,
-	PARSE_MIDI_CH_MSG_2_1,
-	PARSE_MIDI_CH_MSG_2_2,
-	PARSE_MIDI_CH_MSG_RUNNING_1,
-	PARSE_MIDI_CH_MSG_RUNNING_2,
-	PARSE_MIDI_SYS_EX,
-	NUM_OF_PARSE_MIDI_MESSAGE_STATE
-}Parse_MIDI_Message_State_t;
-
 typedef enum _Parse_MIDI_Message_Event {
 	PARSE_MIDI_EVENT_RCV_STS_CH_MSG_1 = 0,
 	PARSE_MIDI_EVENT_RCV_STS_CH_MSG_2,
@@ -63,12 +39,10 @@ typedef struct _Parse_MIDI_FSM {
 	void (*pTransStateFunc)(MIDI_Handle_t *phMIDI, uint8_t msg);
 }Parse_MIDI_FSM_t;
 
-struct _MIDI_Handle {
-	MIDI_Channel_Message_Buffer_t	chmsg_buf;
-	MIDI_System_Exclusive_Buffer_t	sysex_buf;
-	const MIDI_Message_Callbacks_t	*pcallback;
-	Parse_MIDI_Message_State_t	state;
-};
+
+MIDI_Handle_t *MIDI_Alloc(void);
+void MIDI_Free(MIDI_Handle_t *phMIDI);
+
 
 static inline Parse_MIDI_Message_Event_t _GetParseMIDIMessageEvent(uint8_t msg) {
 
@@ -108,6 +82,7 @@ static inline Parse_MIDI_Message_Event_t _GetParseMIDIMessageEvent(uint8_t msg) 
 	}
 	
 }
+
 
 static void _StoreChannelMessageStatus(MIDI_Handle_t *phMIDI, uint8_t msg); 
 static void _StoreChannelMessageData(MIDI_Handle_t *phMIDI, uint8_t msg);
@@ -186,7 +161,7 @@ static const Parse_MIDI_FSM_t _midi_trans_state_tbl[NUM_OF_PARSE_MIDI_MESSAGE_ST
 MIDI_Handle_t *MIDI_Init(const MIDI_Message_Callbacks_t *pcallbacks ) {
 
 	MIDI_Handle_t *phMIDI = NULL;
-	phMIDI = MIDI_ALLOC(sizeof(MIDI_Handle_t));
+	phMIDI = MIDI_Alloc();
 
 	if ( phMIDI != NULL ) {
 		uint32_t i = 0;
@@ -209,7 +184,7 @@ MIDI_Handle_t *MIDI_Init(const MIDI_Message_Callbacks_t *pcallbacks ) {
 void MIDI_DeInit( MIDI_Handle_t *phMIDI ) {
 	
 	if ( phMIDI != NULL ) {
-		MIDI_FREE(phMIDI);
+		MIDI_Free(phMIDI);
 	}
 }
 
@@ -233,6 +208,16 @@ int32_t MIDI_Play(MIDI_Handle_t *phMIDI, const uint8_t *midi_msg, size_t len) {
 	return 0;
 }
 
+__attribute__((weak)) MIDI_Handle_t *MIDI_Alloc(void)
+{
+	static MIDI_Handle_t hMIDI;
+	return &hMIDI;
+}
+
+__attribute__((weak)) void MIDI_Free(MIDI_Handle_t *phMIDI)
+{
+	(void)phMIDI;
+}
 
 static void _StoreChannelMessageStatus(MIDI_Handle_t *phMIDI, uint8_t msg) {
 	phMIDI->chmsg_buf.msg0 = msg;

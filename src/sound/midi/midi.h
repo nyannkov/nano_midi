@@ -27,7 +27,30 @@
 
 #include "midiconf.h"
 
-typedef struct _MIDI_Handle MIDI_Handle_t;
+typedef struct _MIDI_Channel_Message_Buffer {
+    uint8_t msg0; // status byte
+    uint8_t msg1; // data byte 1
+    uint8_t msg2; // data byte 2
+    uint8_t pad;  // padding
+}MIDI_Channel_Message_Buffer_t;
+
+typedef struct _MIDI_System_Exclusive_Buffer {
+	uint8_t msg[MAX_SYS_EX_BUF_SIZE];
+	size_t	len;
+}MIDI_System_Exclusive_Buffer_t;
+
+
+typedef enum _Parse_MIDI_Message_State {
+	PARSE_MIDI_IDLE = 0,
+	PARSE_MIDI_CH_MSG_1,
+	PARSE_MIDI_CH_MSG_2_1,
+	PARSE_MIDI_CH_MSG_2_2,
+	PARSE_MIDI_CH_MSG_RUNNING_1,
+	PARSE_MIDI_CH_MSG_RUNNING_2,
+	PARSE_MIDI_SYS_EX,
+	NUM_OF_PARSE_MIDI_MESSAGE_STATE
+}Parse_MIDI_Message_State_t;
+
 
 typedef struct _MIDI_ChannelVoiceMessage {
     void (*pNoteOff)(uint8_t ch, uint8_t kk, uint8_t uu);
@@ -56,6 +79,12 @@ typedef struct _MIDI_Message_Callbacks {
     MIDI_SystemMessage_t        system;
 }MIDI_Message_Callbacks_t;
 
+typedef struct _MIDI_Handle {
+	MIDI_Channel_Message_Buffer_t	chmsg_buf;
+	MIDI_System_Exclusive_Buffer_t	sysex_buf;
+	const MIDI_Message_Callbacks_t	*pcallback;
+	Parse_MIDI_Message_State_t	state;
+}MIDI_Handle_t;
 
 extern MIDI_Handle_t *MIDI_Init(const MIDI_Message_Callbacks_t *pcallbacks );
 extern void MIDI_DeInit( MIDI_Handle_t *phMIDI );

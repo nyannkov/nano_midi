@@ -9,7 +9,6 @@ BUILD_DIR           = env.get("PROJECT_BUILD_DIR")
 PIOENV              = env.get("PIOENV")
 
 SRC_DIR             = "src"
-MEMMNG_DIR          = join(SRC_DIR, "memmng")
 FREERUN_TIMER_DIR   = join(SRC_DIR, "freerun_timer")
 SHELL_DIR           = join(SRC_DIR, "shell")
 SOUND_DIR           = join(SRC_DIR, "sound")
@@ -27,7 +26,6 @@ env.Append(
 
     CPPPATH = [
         join(PROJ_DIR, SRC_DIR),
-        join(PROJ_DIR, MEMMNG_DIR),
         join(PROJ_DIR, FREERUN_TIMER_DIR),
         join(PROJ_DIR, SHELL_DIR),
         join(PROJ_DIR, SOUND_DIR),

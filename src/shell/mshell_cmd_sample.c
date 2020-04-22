@@ -77,7 +77,7 @@ __attribute__((weak)) int mshell_execute_command(int argc, char *argv[])
 
 static int cmd_koncha(int argc, char *argv[])
 {
-  usb_cdc_printf("Hi! I'm nano_midi :)\r\n");
+  usb_cdc_printf("Hi! I'm nano_midi :).\r\n");
   return 0;
 }
 

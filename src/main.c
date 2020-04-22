@@ -27,7 +27,6 @@
 #include "freerun_timer.h"
 #include "usb_midi_app.h"
 #include "usb_cdc_app.h"
-#include "memmng.h"
 
 #define BLINK_CYCLE			1000000
 
@@ -36,14 +35,8 @@ static void enable_periph_clock(void);
 static void config_gpio(void);
 static void led_blink(void);
 
-static unsigned char pool[1024];
-static memmng_t hmemmng;
-
 int  main(void)
 {
-
-	// initialize a memory pool used as a heap.
-	memmng_init(&hmemmng, pool, sizeof(pool));
 
 	config_eclic();
 
@@ -68,16 +61,6 @@ int  main(void)
 	}
 
 	return 0;
-}
-
-void *malloc(size_t size)
-{
-	return memmng_alloc(&hmemmng, size);
-}
-
-void free(void *p)
-{
-	memmng_free(&hmemmng, p);
 }
 
 static void enable_periph_clock(void)

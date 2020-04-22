@@ -25,21 +25,11 @@
 #ifndef __MIDICONF_H__
 #define __MIDICONF_H__
 
-#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 
-
 #ifndef MAX_SYS_EX_BUF_SIZE
 #define MAX_SYS_EX_BUF_SIZE 256
-#endif
-
-#ifndef MIDI_ALLOC
-#define MIDI_ALLOC malloc
-#endif
-
-#ifndef MIDI_FREE
-#define MIDI_FREE free
 #endif
 
 #endif /* __MIDICONF_H__ */
