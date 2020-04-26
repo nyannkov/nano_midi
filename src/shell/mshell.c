@@ -26,10 +26,10 @@
 #include "ymf825.h"
 
 
-#define MAX_COMMAND_ARG_NUM				(10)
+#define MAX_COMMAND_ARG_NUM			(10)
 
 #define MAX_STRING_LENGTH_SIZE			(1024)
-#define MAX_BYTE_ARRAY_SIZE				(MAX_STRING_LENGTH_SIZE/2)
+#define MAX_BYTE_ARRAY_SIZE			(MAX_STRING_LENGTH_SIZE/2)
 
 typedef struct _CommandArgs
 {
@@ -39,7 +39,7 @@ typedef struct _CommandArgs
 
 typedef struct _CharArray
 {
-	size_t 		length;	
+	size_t 		length;
 	uint8_t	 	string[MAX_STRING_LENGTH_SIZE];
 }CharArray_t;
 
@@ -49,8 +49,8 @@ typedef struct _ByteArray
 	uint8_t		bytes[MAX_BYTE_ARRAY_SIZE];
 }ByteArray_t;
 
-static CommandArgs_t	_command_args;
-static CharArray_t 		_char_array;
+static CommandArgs_t		_command_args;
+static CharArray_t		_char_array;
 static ByteArray_t		_byte_array;
 
 static pf_mshell_hexmode_recv_callback_t _hexmode_recv_callback = (pf_mshell_hexmode_recv_callback_t)0;

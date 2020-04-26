@@ -135,20 +135,20 @@ static inline int32_t spi_receive(uint8_t *outbuf, uint16_t size, uint16_t timeo
 
 int32_t YMF825_Init(void) {
 
-    /* deinitilize SPI and the parameters */
-    spi_i2s_deinit(SPI1);
-    spi_struct_para_init(&spi_init_struct);
+	/* deinitilize SPI and the parameters */
+	spi_i2s_deinit(SPI1);
+	spi_struct_para_init(&spi_init_struct);
 
-    /* SPI1 parameter config */
-    spi_init_struct.trans_mode           = SPI_TRANSMODE_FULLDUPLEX;
-    spi_init_struct.device_mode          = SPI_MASTER;
-    spi_init_struct.frame_size           = SPI_FRAMESIZE_8BIT;
-    spi_init_struct.clock_polarity_phase = SPI_CK_PL_LOW_PH_1EDGE;
-    spi_init_struct.nss                  = SPI_NSS_SOFT;
-    spi_init_struct.prescale             = SPI_PSC_16;
-    spi_init_struct.endian               = SPI_ENDIAN_MSB;
-    spi_init(SPI1, &spi_init_struct);
-    spi_enable(SPI1);
+	/* SPI1 parameter config */
+	spi_init_struct.trans_mode				= SPI_TRANSMODE_FULLDUPLEX;
+	spi_init_struct.device_mode				= SPI_MASTER;
+	spi_init_struct.frame_size				= SPI_FRAMESIZE_8BIT;
+	spi_init_struct.clock_polarity_phase 	= SPI_CK_PL_LOW_PH_1EDGE;
+	spi_init_struct.nss						= SPI_NSS_SOFT;
+	spi_init_struct.prescale				= SPI_PSC_16;
+	spi_init_struct.endian					= SPI_ENDIAN_MSB;
+	spi_init(SPI1, &spi_init_struct);
+	spi_enable(SPI1);
 
 	set_ss_high();
 	set_rst_low();
@@ -342,14 +342,14 @@ void init_825(void) {
 
 void set_tone(void){
   unsigned char tone_data[35] ={
-    0x81,//header
-    //T_ADR 0
-    0x01,0x85,
-    0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,
-    0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,
-    0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,
-    0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40,
-    0x80,0x03,0x81,0x80,
+	0x81,//header
+	//T_ADR 0
+	0x01,0x85,
+	0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,
+	0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,
+	0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,
+	0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40,
+	0x80,0x03,0x81,0x80,
   };
   
    if_s_write( 0x08, 0xF6 );
