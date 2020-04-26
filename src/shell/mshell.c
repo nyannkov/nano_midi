@@ -68,17 +68,17 @@ static inline int8_t parse_hex_number(uint8_t chex)
 	{
 		hex = chex - (int8_t)'0';
 	}
-    else
-    {
-        chex |= 0x20; // case-insensitive
-        if ( ( 'a' <= chex ) && ( chex <= 'f' ) )
+	else
+	{
+		chex |= 0x20; // case-insensitive
+		if ( ( 'a' <= chex ) && ( chex <= 'f' ) )
 		{
-            hex = chex - (int8_t)'a' + 0x0A;
-        }
-        else
-        {
-            return -1;
-        }
+			hex = chex - (int8_t)'a' + 0x0A;
+		}
+		else
+		{
+			return -1;
+		}
 	}
 	return hex;
 }
@@ -138,23 +138,23 @@ int32_t mshell_proc(const uint8_t *recv_dat, size_t recv_len)
 			else if ( recv_dat[i] == '\r' )
 			{
 				p_str[i] = '\0'; 
-                if ( _char_array.string[0] == ':')
+				if ( _char_array.string[0] == ':')
 				{// command mode
 					parse_command_args(&_command_args, &_char_array);
 					mshell_execute_command(_command_args.argc, _command_args.argv);
-                }
-                else
+				}
+				else
 				{// hex mode
 					int32_t parse_result = -1;
-                    parse_result = parse_bin_array(&_byte_array, &_char_array);	
-                    if ( !parse_result )
+					parse_result = parse_bin_array(&_byte_array, &_char_array);	
+					if ( !parse_result )
 					{
-                        if ( _hexmode_recv_callback )
-                        {
-                            _hexmode_recv_callback(_byte_array.bytes, _byte_array.num);
-                        }
-                    }
-                }
+						if ( _hexmode_recv_callback )
+						{
+							_hexmode_recv_callback(_byte_array.bytes, _byte_array.num);
+						}
+					}
+				}
 				mshell_init();
 				p_str = &_char_array.string[0];
 			}
