@@ -86,14 +86,3 @@ env.Replace(
 
 # copy CCFLAGS to ASFLAGS (-x assembler-with-cpp mode)
 env.Append(ASFLAGS=env.get("CCFLAGS", [])[:])
-
-def append_flags(node, flags):
-    obj = env.Object(node, CFLAGS = flags)
-    # NOTE
-    # This is a tempolary code depending on the implementation of the function "CollectBuildFiles" in platformio.py (PlatformIO Core 4.3.1).
-    obj.get_path = lambda :node.get_path() 
-    return obj
-
-# additional compile option setting (per file).
-env.AddBuildMiddleware(lambda node : append_flags(node, "-Wno-attributes"),                    join("*", USBFS_DRIV_DIR, "Source", "drv_usb_core.c" ))
-env.AddBuildMiddleware(lambda node : append_flags(node, "-Wno-attributes -Wno-parentheses"),   join("*", USBFS_DRIV_DIR, "Source", "drv_usbd_int.c" ))
