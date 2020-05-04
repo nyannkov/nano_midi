@@ -266,12 +266,12 @@ static void set_ss_high(void) {
 
 static void set_rst_low(void) {
 
-	gpio_bit_reset(GPIOA, GPIO_PIN_8);
+	gpio_bit_reset(GPIOB, GPIO_PIN_11);
 }
 
 static void set_rst_high(void) {
 
-	gpio_bit_set(GPIOA, GPIO_PIN_8);
+	gpio_bit_set(GPIOB, GPIO_PIN_11);
 }
 
 static void setup(void) {
