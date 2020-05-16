@@ -27,5 +27,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define __WEAK__  __attribute__((weak))
 
 #endif // __MSHELL_CONF_H__

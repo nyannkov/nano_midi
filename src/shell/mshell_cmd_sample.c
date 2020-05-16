@@ -22,6 +22,7 @@
 	SOFTWARE.
 */
 #include <string.h> //strcmp.h
+#include "mshell_conf.h"
 #include "mshell_cmd.h"
 #include "midi_cdc_core.h"
 
@@ -49,7 +50,7 @@ static const command_table_t default_command_table[] =
 
 static const size_t n_default_command_table = sizeof(default_command_table) / sizeof(default_command_table[0]);
 
-__attribute__((weak)) int mshell_execute_command(int argc, char *argv[])
+__WEAK__ int mshell_execute_command(int argc, char *argv[])
 {
 	int i = 0;
 	int cmd_ret = 0;
