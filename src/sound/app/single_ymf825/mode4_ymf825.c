@@ -318,6 +318,7 @@ static void _ymf825_ControlChange(uint8_t ch, uint8_t cc, uint8_t vv) {
 				{
 					// NOTHING TO DO
 				}
+				break;
 
 				default:
 				break;
@@ -383,6 +384,7 @@ static void _ymf825_ControlChange(uint8_t ch, uint8_t cc, uint8_t vv) {
 				{
 					// NOTHING TO DO
 				}
+				break;
 
 				default:
 				break;
