@@ -1,7 +1,7 @@
-﻿/*
+/*
   MIT License
 
-  Copyright (c) 2019 nyannkov
+  Copyright (c) 2020 nyannkov
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,13 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
-
-#ifndef __MIDICONF_H__
-#define __MIDICONF_H__
+#ifndef __SINGLE_YMZ294_H__
+#define __SINGLE_YMZ294_H__
 
 #include <stdint.h>
-#include <stddef.h>
+#include "midi.h"
 
-#define __WEAK__  __attribute__((weak))
+extern MIDI_Handle_t *midi_ymz294_init(void);
+extern void midi_ymz294_deinit(MIDI_Handle_t *phMIDI);
 
-#ifndef MAX_SYS_EX_BUF_SIZE
-#define MAX_SYS_EX_BUF_SIZE 256
-#endif
-
-#endif /* __MIDICONF_H__ */
+#endif//__SINGLE_YMZ294_H__
