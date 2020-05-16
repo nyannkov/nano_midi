@@ -78,6 +78,12 @@ static void enable_periph_clock(void)
 	rcu_periph_clock_enable(RCU_TIMER6);
 	usb_rcu_config();
 
+#ifdef USE_SINGLE_YMZ294
+	// SPI0
+	rcu_periph_clock_enable(RCU_SPI0);
+	// TIMER1(YMZ294 phiM)
+	rcu_periph_clock_enable(RCU_TIMER1); // pwm Output
+#endif
 }
 
 static void config_gpio(void)
@@ -96,6 +102,26 @@ static void config_gpio(void)
 
 	// LED
 	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_2);
+
+#ifdef USE_SINGLE_YMZ294
+	// YMZ294 AO
+	gpio_init(GPIOB, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_9);
+
+	// YMZ294 /WR and /CS
+	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_0);
+
+	// YMZ294 phiM (4 MHz clock in)
+	gpio_init(GPIOA, GPIO_MODE_AF_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_1);
+
+	// SN74HC164N /CLR
+	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_4);
+
+	// SN74HC164N B
+	gpio_init(GPIOA, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_6);
+
+	/* SPI0 GPIO config:SCK/PA5, MOSI/PA7 */
+	gpio_init(GPIOA, GPIO_MODE_AF_PP, GPIO_OSPEED_50MHZ, GPIO_PIN_5 | GPIO_PIN_7);
+#endif
 }
 
 static void config_eclic(void)
