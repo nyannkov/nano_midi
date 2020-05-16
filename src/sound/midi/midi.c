@@ -208,13 +208,13 @@ int32_t MIDI_Play(MIDI_Handle_t *phMIDI, const uint8_t *midi_msg, size_t len) {
 	return 0;
 }
 
-__attribute__((weak)) MIDI_Handle_t *MIDI_Alloc(void)
+__WEAK__ MIDI_Handle_t *MIDI_Alloc(void)
 {
 	static MIDI_Handle_t hMIDI;
 	return &hMIDI;
 }
 
-__attribute__((weak)) void MIDI_Free(MIDI_Handle_t *phMIDI)
+__WEAK__ void MIDI_Free(MIDI_Handle_t *phMIDI)
 {
 	(void)phMIDI;
 }

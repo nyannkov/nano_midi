@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define __WEAK__  __attribute__((weak))
+
 #ifndef MAX_SYS_EX_BUF_SIZE
 #define MAX_SYS_EX_BUF_SIZE 256
 #endif
