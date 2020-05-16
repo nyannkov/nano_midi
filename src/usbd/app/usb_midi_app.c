@@ -48,7 +48,10 @@ static const size_t _cin_midi_x_size_tbl[16] =
 };
 
 static MIDI_Handle_t *ph_midi_mode4_ymf825;
+#ifdef USE_SINGLE_YMZ294
 static MIDI_Handle_t *ph_midi_single_ymz294;
+#endif
+
 static  midi_handle_list_t hmidi_list[MAX_MIDI_HANDLE_LIST_COUNT];
 
 static void init_midi_handle_list(void);
@@ -58,7 +61,9 @@ void init_usb_midi_app(void)
 	init_midi_handle_list();
 
 	ph_midi_mode4_ymf825 = MIDI_Mode4_YMF825_Init();
+#ifdef USE_SINGLE_YMZ294
 	ph_midi_single_ymz294 = midi_ymz294_init();
+#endif
 }
 
 int32_t usb_midi_proc(const uint8_t *mid_msg,  size_t len)
@@ -78,7 +83,9 @@ int32_t usb_midi_proc(const uint8_t *mid_msg,  size_t len)
 		if ( midi_x_size != 0 )
 		{
 			MIDI_Play(ph_midi_mode4_ymf825, &packet->midi[0], midi_x_size);
+#ifdef USE_SINGLE_YMZ294
 			MIDI_Play(ph_midi_single_ymz294, &packet->midi[0], midi_x_size);
+#endif
 		}
 	}
 	return 0;
