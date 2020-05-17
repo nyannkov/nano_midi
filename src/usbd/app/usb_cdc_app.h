@@ -27,7 +27,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
+typedef enum
+{
+  SOUND_SOURCE_YMF825 = 0,
+  SOUND_SOURCE_YMZ294
+} sound_source_t;
+
 extern void init_usb_cdc_app(void);
 extern int32_t usb_cdc_proc(const uint8_t *data, size_t len);
+extern int32_t set_hexmode_sound_source(sound_source_t source);
+extern sound_source_t get_hexmode_sound_source(void);
 
 #endif//__USB_CDC_APP_H__
