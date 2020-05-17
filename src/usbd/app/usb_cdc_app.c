@@ -25,8 +25,16 @@
 #include "mshell.h"
 #include "usbd/midi_cdc_core.h"
 #include "ymf825.h"
+#ifdef USE_SINGLE_YMZ294
+#include "ymz294.h"
+#endif
 
 static int32_t send_recv_ymf825(const uint8_t *bin_array, size_t bin_len);
+#ifdef USE_SINGLE_YMZ294
+static int32_t send_ymz294(const uint8_t *bin_array, size_t bin_len);
+#endif
+
+static sound_source_t registered_source = SOUND_SOURCE_YMF825;
 
 void init_usb_cdc_app(void)
 {
@@ -38,6 +46,46 @@ int32_t usb_cdc_proc(const uint8_t *data, size_t len)
 {
 	return mshell_proc(data, len);
 }
+
+
+int32_t set_hexmode_sound_source(sound_source_t source)
+{
+	int32_t result = -1;
+	switch (source)
+	{
+		case SOUND_SOURCE_YMF825:
+		{
+			mshell_register_hexmode_recv_callback(send_recv_ymf825);
+			registered_source = source;
+			result = 0;
+		}
+		break;
+
+#ifdef USE_SINGLE_YMZ294
+		case SOUND_SOURCE_YMZ294:
+		{
+			mshell_register_hexmode_recv_callback(send_ymz294);
+			registered_source = source;
+			result = 0;
+		}
+		break;
+#endif
+
+		default:
+		{
+			result = -1;
+		}
+		break;
+	}
+
+	return result;
+}
+
+sound_source_t get_hexmode_sound_source(void)
+{
+	return registered_source;
+}
+
 
 static int32_t send_recv_ymf825(const uint8_t *bin_array, size_t bin_len)
 {
@@ -64,3 +112,18 @@ static int32_t send_recv_ymf825(const uint8_t *bin_array, size_t bin_len)
 
 	return 0;
 }
+
+#ifdef USE_SINGLE_YMZ294
+static int32_t send_ymz294(const uint8_t *bin_array, size_t bin_len)
+{
+	uint32_t i = 0;
+	bin_len &= (size_t)~0x1UL;
+
+	for ( i = 0; i < bin_len; i+=2 )
+	{
+		ymz294_write(bin_array[i], bin_array[i+1]);
+	}
+
+	return 0;
+}
+#endif
