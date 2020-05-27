@@ -41,7 +41,7 @@ OF SUCH DAMAGE.
 
 // each usb cdc acm data send buffer size
 #ifndef USB_CDC_TX_BUF_SIZE
-#define USB_CDC_TX_BUF_SIZE                     (CDC_ACM_DATA_PACKET_SIZE * 5)
+#define USB_CDC_TX_BUF_SIZE                     (CDC_ACM_DATA_PACKET_SIZE * 10)
 #endif
 
 #define SEND_ENCAPSULATED_COMMAND               0x00

@@ -26,10 +26,6 @@
 #include "ymf825.h"
 
 
-#define MAX_COMMAND_ARG_NUM			(10)
-
-#define MAX_STRING_LENGTH_SIZE			(1024)
-#define MAX_BYTE_ARRAY_SIZE			(MAX_STRING_LENGTH_SIZE/2)
 
 typedef struct _CommandArgs
 {
