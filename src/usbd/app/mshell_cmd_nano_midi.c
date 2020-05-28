@@ -42,7 +42,19 @@ typedef struct
 #define PARSE_ERROR_OUT_OF_RANGE		-2
 #define PARSE_ERROR_UNEXPECTED			-100
 
-static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294_setting_t *out);
+typedef enum
+{
+	YMZ294_CMD_OPT_ID_LS = 0,
+	YMZ294_CMD_OPT_ID_CH,
+	YMZ294_CMD_OPT_ID_EN,
+	YMZ294_CMD_OPT_ID_MX,
+	YMZ294_CMD_OPT_ID_EM,
+	YMZ294_CMD_OPT_ID_ES,
+	YMZ294_CMD_OPT_ID_EP,
+	YMZ294_CMD_OPT_ID_NP,
+}ymz294_cmd_opt_id_t;
+
+static int32_t try_parse_ymz294_setting(ymz294_cmd_opt_id_t opt_id, const char *str, ymz294_setting_t *out);
 static int32_t try_parse_uint32(const char *str, uint32_t *out, uint32_t min, uint32_t max);
 #endif
 
@@ -188,10 +200,11 @@ static const struct ymz294_cmd_opts
 {
 	const char *opt;
 	const char *brief;
-} ymz294_cmd_opt[7] = 
+} ymz294_cmd_opt[] = 
 {
 	{"-ls",  "Show current setting"},
 	{"-ch",  "MIDI channel to change setting [0-15]"},
+	{"-en",  "Channel enabled [ true | false ]"},
 	{"-mx",  "MIXER setting [ tone | noise ]"},
 	{"-em",  "Envelope mode [ off | on(use envelop)]"},
 	{"-es",  "Envelope shape [0x0-0xF]"},
@@ -215,12 +228,13 @@ static int cmd_ymz294(int argc, char *argv[])
 	else if ( !strcmp(argv[1], "-ls" ) )
 	{// show current setting
 		uint8_t ch = 0;
-		usb_cdc_printf("ch\tmx\tem\tes\tep\tnp\r\n");
+		usb_cdc_printf("ch\ten\tmx\tem\tes\tep\tnp\r\n");
 		for ( ch = 0; ch < MAX_MIDI_CH_NUMBER; ch++ )
 		{
 			get_ymz294_setting(ch, &setting);
-			usb_cdc_printf("%02u\t%s\t%s\t0x%02X\t0x%04X\t0x%02X\r\n", 
+			usb_cdc_printf("%02u\t%s\t%s\t%s\t0x%02X\t0x%04X\t0x%02X\r\n", 
 				ch,
+				setting.ch_enabled == YMZ294_CH_ENABLED_FALSE ? "false" : "true",
 				setting.sel_mixer == YMZ294_MIXER_TONE ? "tone" : "noise",
 				setting.env_mode == YMZ294_ENVELOPE_ENABLE ? "on" : "off",
 				setting.env_shape,
@@ -321,9 +335,10 @@ static int cmd_ymz294(int argc, char *argv[])
 				if ( process_result == 0 )
 				{
 					set_ymz294_setting(setting_ch, &setting);
-					usb_cdc_printf("ch\tmx\tem\tes\tep\tnp\r\n");
-					usb_cdc_printf("%02u\t%s\t%s\t0x%02X\t0x%04X\t0x%02X\r\n", 
+					usb_cdc_printf("ch\ten\tmx\tem\tes\tep\tnp\r\n");
+					usb_cdc_printf("%02u\t%s\t%s\t%s\t0x%02X\t0x%04X\t0x%02X\r\n", 
 						setting_ch,
+						setting.ch_enabled == YMZ294_CH_ENABLED_FALSE ? "false" : "true",
 						setting.sel_mixer == YMZ294_MIXER_TONE ? "tone" : "noise",
 						setting.env_mode == YMZ294_ENVELOPE_ENABLE ? "on" : "off",
 						setting.env_shape,
@@ -369,13 +384,30 @@ static int32_t try_parse_uint32(const char *str, uint32_t *out, uint32_t min, ui
 	return 0;
 }
 
-static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294_setting_t *out)
+static int32_t try_parse_ymz294_setting(ymz294_cmd_opt_id_t opt_id, const char *str, ymz294_setting_t *out)
 {
 	uint32_t value = 0;
 	int32_t result = 0;
-	switch (opt_idx)
+	switch (opt_id)
 	{
-		case 2:
+		case YMZ294_CMD_OPT_ID_EN:
+		{// -mx
+			if (!strcmp(str, "false"))
+			{
+				out->ch_enabled = YMZ294_CH_ENABLED_FALSE;
+			}
+			else if ( !strcmp(str, "true"))
+			{
+				out->ch_enabled = YMZ294_CH_ENABLED_TRUE;
+			}
+			else
+			{
+				result = PARSE_ERROR_INVALID_CHARACTER;
+			}
+		}
+		break;
+
+		case YMZ294_CMD_OPT_ID_MX:
 		{// -mx
 			if (!strcmp(str, "tone"))
 			{
@@ -392,7 +424,7 @@ static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294
 		}
 		break;
 
-		case 3:
+		case YMZ294_CMD_OPT_ID_EM:
 		{// -em
 			if (!strcmp(str, "on"))
 			{
@@ -409,7 +441,7 @@ static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294
 		}
 		break;
 
-		case 4:
+		case YMZ294_CMD_OPT_ID_ES:
 		{// -es
 			result = try_parse_uint32(str, &value, 0x0, 0xF);
 			if ( result == 0 )
@@ -419,7 +451,7 @@ static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294
 		}
 		break;
 
-		case 5:
+		case YMZ294_CMD_OPT_ID_EP:
 		{// -ep
 			result = try_parse_uint32(str, &value, 0x0000, 0xFFFF);
 			if ( result == 0 )
@@ -429,7 +461,7 @@ static int32_t try_parse_ymz294_setting(uint8_t opt_idx, const char *str, ymz294
 		}
 		break;
 		
-		case 6:
+		case YMZ294_CMD_OPT_ID_NP:
 		{// -np
 			result = try_parse_uint32(str, &value, 0x00, 0x1F);
 			if ( result == 0 )

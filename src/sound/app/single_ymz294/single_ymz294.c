@@ -130,16 +130,12 @@ static uint8_t mixer_value = 0x0000;
 static uint16_t env_frq_value = 0x0000;
 static uint16_t noise_frq_value = 0x0000;
 
-static play_mode_t play_mode = PLAY_MODE_1_SKIP_PERCUSSION_CHANNEL;
-
 MIDI_Handle_t *midi_ymz294_init(void) {
 
 	MIDI_Handle_t *phMIDI = NULL;
 	uint32_t i = 0;
 
 	ymz294_init();
-
- 	play_mode = PLAY_MODE_1_SKIP_PERCUSSION_CHANNEL;
 
 	// set mixer
 	mixer_value = 0x38;
@@ -151,14 +147,18 @@ MIDI_Handle_t *midi_ymz294_init(void) {
 
 	for ( i = 0; i < MAX_MIDI_CH_NUMBER; i++ )
 	{
+		_play_tuning[i].ymz294_setting.ch_enabled	= YMZ294_CH_ENABLED_TRUE;
 		_play_tuning[i].ymz294_setting.env_freq 	= 0x1E85;// 1 Hz
 		_play_tuning[i].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_DISABLE;
 		_play_tuning[i].ymz294_setting.env_shape	= 0x09;
 		_play_tuning[i].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
 		_play_tuning[i].ymz294_setting.noise_freq	= 0;
 	}
+	_play_tuning[9].ymz294_setting.ch_enabled 	= YMZ294_CH_ENABLED_FALSE;// noise channel (default disable)
+	_play_tuning[9].ymz294_setting.sel_mixer  	= YMZ294_MIXER_NOISE;
+	_play_tuning[9].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_ENABLE;
 
-#if 1
+#if 0
 	_play_tuning[0].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_ENABLE;
 	_play_tuning[0].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
 	_play_tuning[0].ymz294_setting.env_freq 	= 0x3D09; // 0.5 Hz
@@ -193,16 +193,6 @@ void midi_ymz294_deinit(MIDI_Handle_t *phMIDI) {
 }
 
 
-void set_play_mode(play_mode_t mode)
-{
-	play_mode = mode;
-}
-
-play_mode_t get_skip_mode(void)
-{
-	return play_mode;
-}
-
 int32_t set_ymz294_setting(uint8_t midi_ch, const ymz294_setting_t *p_setting)
 {
 	if ( p_setting == (const ymz294_setting_t *)0 )
@@ -215,7 +205,7 @@ int32_t set_ymz294_setting(uint8_t midi_ch, const ymz294_setting_t *p_setting)
 	}
 	else
 	{
-
+		_play_tuning[midi_ch].ymz294_setting.ch_enabled = p_setting->ch_enabled;
 		_play_tuning[midi_ch].ymz294_setting.sel_mixer 	= p_setting->sel_mixer;
 		_play_tuning[midi_ch].ymz294_setting.env_mode	= p_setting->env_mode;
 		_play_tuning[midi_ch].ymz294_setting.env_shape	= p_setting->env_shape;
@@ -238,6 +228,7 @@ int32_t get_ymz294_setting(uint8_t midi_ch, ymz294_setting_t *dest_buf)
 	}
 	else
 	{
+		dest_buf->ch_enabled	= _play_tuning[midi_ch].ymz294_setting.ch_enabled; 
 		dest_buf->sel_mixer		= _play_tuning[midi_ch].ymz294_setting.sel_mixer; 
 		dest_buf->env_mode		= _play_tuning[midi_ch].ymz294_setting.env_mode;
 		dest_buf->env_shape		= _play_tuning[midi_ch].ymz294_setting.env_shape;
@@ -286,7 +277,11 @@ static void key_on(uint8_t ymz294_ch, uint8_t midi_ch, uint8_t kk, uint8_t vv)
 			mixer_value_tmp |=	 1 <<  ymz294_ch;
 			mixer_value_tmp &= ~(1 << (ymz294_ch + 3));
 			// set NP
-			// TODO
+			if ( noise_frq_value != _play_tuning[midi_ch].ymz294_setting.noise_freq )
+			{
+				noise_frq_value = _play_tuning[midi_ch].ymz294_setting.noise_freq;
+				ymz294_write(0x06, noise_frq_value);
+			}
 		}
 
 		if ( mixer_value != mixer_value_tmp )
@@ -328,8 +323,8 @@ static void _ymz294_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv)
 {
 	uint32_t i = 0;
 
-	if ( ( ch == 9 ) && ( play_mode == PLAY_MODE_1_SKIP_PERCUSSION_CHANNEL ))
-	{// noise
+	if ( _play_tuning[ch].ymz294_setting.ch_enabled == YMZ294_CH_ENABLED_FALSE )
+	{
 		return;
 	}
 	if ( vv != 0 )
