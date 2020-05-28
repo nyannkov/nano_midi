@@ -21,21 +21,37 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
-#ifndef __USB_CDC_APP_H__
-#define __USB_CDC_APP_H__
+#ifndef __SINGLE_YMZ294_H__
+#define __SINGLE_YMZ294_H__
 
 #include <stdint.h>
-#include <stddef.h>
+#include "midi.h"
 
-typedef enum
+#define MAX_MIDI_CH_NUMBER      16
+
+#define YMZ294_CH_ENABLED_FALSE 0
+#define YMZ294_CH_ENABLED_TRUE	1
+
+#define YMZ294_ENVELOPE_DISABLE 0
+#define YMZ294_ENVELOPE_ENABLE  1
+
+#define YMZ294_MIXER_TONE  		0
+#define YMZ294_MIXER_NOISE 		1
+
+typedef struct
 {
-  SOUND_SOURCE_YMF825 = 0,
-  SOUND_SOURCE_YMZ294
-} sound_source_t;
+	uint8_t  ch_enabled;
+	uint8_t  sel_mixer;
+	uint8_t  env_mode;
+	uint8_t  env_shape;
+	uint16_t env_freq;
+	uint16_t noise_freq;
+} ymz294_setting_t;
 
-extern void init_usb_cdc_app(void);
-extern int32_t usb_cdc_proc(const uint8_t *data, size_t len);
-extern int32_t set_hexmode_sound_source(sound_source_t source);
-extern sound_source_t get_hexmode_sound_source(void);
 
-#endif//__USB_CDC_APP_H__
+extern MIDI_Handle_t *midi_ymz294_init(void);
+extern void midi_ymz294_deinit(MIDI_Handle_t *phMIDI);
+extern int32_t set_ymz294_setting(uint8_t midi_ch, const ymz294_setting_t *p_settings);
+extern int32_t get_ymz294_setting(uint8_t midi_ch, ymz294_setting_t *dest_buf);
+
+#endif//__SINGLE_YMZ294_H__

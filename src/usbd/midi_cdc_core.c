@@ -41,7 +41,7 @@ OF SUCH DAMAGE.
 
 // each usb cdc acm data send buffer size
 #ifndef USB_CDC_TX_BUF_SIZE
-#define USB_CDC_TX_BUF_SIZE                     (CDC_ACM_DATA_PACKET_SIZE * 5)
+#define USB_CDC_TX_BUF_SIZE                     (CDC_ACM_DATA_PACKET_SIZE * 10)
 #endif
 
 #define SEND_ENCAPSULATED_COMMAND               0x00
@@ -83,7 +83,7 @@ static usb_cdc_send_status_t usb_cdc_send_status = USB_CDC_SEND_STATUS_INIT;
 static uint8_t current_buffer_page = 0;
 
 // current usb cdc acm data buffer position
-static uint8_t current_end_position = 0;
+static uint16_t current_end_position = 0;
 
 // usb cdc acm data send buffer (double buffer)
 static uint8_t usb_cdc_tx_buffer[USB_CDC_TX_BUF_PAGE_NUM][USB_CDC_TX_BUF_SIZE];

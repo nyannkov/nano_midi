@@ -27,5 +27,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define MAX_COMMAND_ARG_NUM			(20)
+
+#define MAX_STRING_LENGTH_SIZE		(1024)
+#define MAX_BYTE_ARRAY_SIZE			(MAX_STRING_LENGTH_SIZE/2)
+
+#define __WEAK__  __attribute__((weak))
 
 #endif // __MSHELL_CONF_H__

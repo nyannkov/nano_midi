@@ -21,7 +21,7 @@
 	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	SOFTWARE.
 */
-#include <string.h> //strcmp.h
+#include <string.h> //strcmp
 #include "mshell_cmd.h"
 #include "midi_cdc_core.h"
 
