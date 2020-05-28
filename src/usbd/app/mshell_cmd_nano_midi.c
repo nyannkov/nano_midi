@@ -23,6 +23,7 @@
 */
 #include <string.h> //strcmp
 #include <stdlib.h> //strtoul
+#include "main.h"
 #include "mshell_conf.h"
 #include "mshell_cmd.h"
 #include "midi_cdc_core.h"
@@ -116,7 +117,7 @@ int mshell_execute_command(int argc, char *argv[])
 
 static int cmd_koncha(int argc, char *argv[])
 {
-	usb_cdc_printf("Hi! I'm nano_midi :).\r\n");
+	usb_cdc_printf("Hi! I'm nano_midi ver.%s :).\r\n", NANO_MIDI_VERSION);
 	return 0;
 }
 
