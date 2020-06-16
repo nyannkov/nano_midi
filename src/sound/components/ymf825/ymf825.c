@@ -254,6 +254,25 @@ void YMF825_SetToneParameter(uint8_t tone_matrix[16][30]) {
 
 }
 
+void YMF825_SetToneParameterEx(uint8_t tone_matrix[][30], uint8_t block_num) {
+
+	uint8_t addr = 0x07;
+	int32_t i = 0;
+
+	if_s_write( 0x08, 0xF6 );
+	delay(1);
+	if_s_write( 0x08, 0x00 );
+	set_ss_low();
+	spi_transmit(&addr, 1, SPI_TRANSMIT_TIMEOUT);
+	spi_transmit(&tone_data_head[0], sizeof(tone_data_head), SPI_TRANSMIT_TIMEOUT);
+	for ( i = 0; i < block_num; i++ ) {
+		spi_transmit(tone_matrix[i], 30, SPI_TRANSMIT_TIMEOUT);
+	}
+	spi_transmit(&tone_data_tail[0], sizeof(tone_data_tail), SPI_TRANSMIT_TIMEOUT);
+	set_ss_high();	
+
+}
+
 static void set_ss_low(void) {
 
 	gpio_bit_reset(GPIOB, GPIO_PIN_12);
