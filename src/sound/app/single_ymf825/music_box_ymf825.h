@@ -26,7 +26,20 @@
 
 #include "midi.h"
 
+#define MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE  0
+#define MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE  1
+
+#pragma pack(1)
+typedef struct
+{
+  uint8_t percussion_msg; // accept or ignore
+  uint8_t program_no;     // Program number to use. The range is [1-128].
+} music_box_ymf825_config_t;
+#pragma pack()
+
 extern MIDI_Handle_t *MIDI_MUSIC_BOX_YMF825_Init(void);
 extern void MIDI_MUSIC_BOX_YMF825_DeInit(MIDI_Handle_t *phMIDI);
+extern int32_t SetConfig_MUSIC_BOX_YMF825(const music_box_ymf825_config_t *cfg);
+extern int32_t GetConfig_MUSIC_BOX_YMF825(music_box_ymf825_config_t *out);
 
 #endif /* __MUSIC_BOX_YMF825_H__ */

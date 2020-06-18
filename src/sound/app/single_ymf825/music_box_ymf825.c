@@ -41,6 +41,8 @@ extern const uint8_t ymf825_tone_table[128][30];
 #define YMF825_TONE_NUM_TONE	0
 #define YMF825_TONE_NUM_NOISE	1
 
+#define PERCUSSION_CHANNEL_NO	9
+
 #pragma pack(1)
 typedef struct _MIDI_TuningData {
 	uint8_t LSB;
@@ -60,8 +62,13 @@ typedef struct
 	uint8_t key_stat; // current key state (on/off)
 	uint8_t note_no;  // note number
 	uint8_t mid_ch;   // midi channel
-} ymz294_ch_stat_t;
+} ymz825_ch_stat_t;
 #pragma pack()
+
+static music_box_ymf825_config_t _music_box_ymf825_config = {
+	.percussion_msg = MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE,
+	.program_no = 11
+};
 
 static const uint8_t _tone_noise[NUM_OF_TONE_CFG] ={
 	0x01,0x80,
@@ -73,7 +80,7 @@ static const uint8_t _tone_noise[NUM_OF_TONE_CFG] ={
 
 static MIDI_PlayTuning_t _play_tuning[MAX_CH_NUMBER];
 static uint8_t _ch_program_tbl[MAX_TONE_NUMBER][NUM_OF_TONE_CFG];
-static ymz294_ch_stat_t _ch_stat[MAX_CH_NUMBER] = 
+static ymz825_ch_stat_t _ch_stat[MAX_CH_NUMBER] = 
 {
 	{YMF825_NOTE_OFF, 0, 0},
 	{YMF825_NOTE_OFF, 0, 0},
@@ -131,6 +138,7 @@ static const MIDI_Message_Callbacks_t _ymf825_midi_msg_callbacks = {
 MIDI_Handle_t *MIDI_MUSIC_BOX_YMF825_Init(void) {
 
 	uint8_t i = 0;
+	uint32_t set_conf_result = -1;
 	MIDI_Handle_t *phMIDI = NULL;
 
 	YMF825_Init();
@@ -139,11 +147,11 @@ MIDI_Handle_t *MIDI_MUSIC_BOX_YMF825_Init(void) {
 		_ResetChannelSetting(i);
 	}
 
-	memcpy(_ch_program_tbl[YMF825_TONE_NUM_NOISE],	 _tone_noise, NUM_OF_TONE_CFG);
-	memcpy(_ch_program_tbl[YMF825_TONE_NUM_TONE], 	ymf825_tone_table[81-1], NUM_OF_TONE_CFG);
-	YMF825_SetToneParameterEx(_ch_program_tbl, MAX_TONE_NUMBER);	
-
-	phMIDI = MIDI_Init(&_ymf825_midi_msg_callbacks);
+	set_conf_result = SetConfig_MUSIC_BOX_YMF825(&_music_box_ymf825_config);
+	if ( set_conf_result == 0 )
+	{
+		phMIDI = MIDI_Init(&_ymf825_midi_msg_callbacks);
+	}
 
 	return phMIDI;
 }
@@ -151,6 +159,39 @@ MIDI_Handle_t *MIDI_MUSIC_BOX_YMF825_Init(void) {
 void MIDI_MUSIC_BOX_YMF825_DeInit(MIDI_Handle_t *phMIDI) {
 
 	MIDI_DeInit(phMIDI);
+}
+
+int32_t SetConfig_MUSIC_BOX_YMF825(const music_box_ymf825_config_t *cfg)
+{
+	if ( cfg == (const music_box_ymf825_config_t *)0 )
+	{
+		return -1;
+	}
+	else if ( 128 < cfg->program_no )
+	{
+		return -2;
+	}
+	else
+	{
+		memcpy(_ch_program_tbl[YMF825_TONE_NUM_NOISE],	 _tone_noise, NUM_OF_TONE_CFG);
+		memcpy(_ch_program_tbl[YMF825_TONE_NUM_TONE], 	ymf825_tone_table[cfg->program_no-1], NUM_OF_TONE_CFG);
+		YMF825_SetToneParameterEx(_ch_program_tbl, MAX_TONE_NUMBER);	
+
+		_music_box_ymf825_config.percussion_msg = cfg->percussion_msg;
+		_music_box_ymf825_config.program_no 	= cfg->program_no;
+		return 0;
+	}
+}
+
+int32_t GetConfig_MUSIC_BOX_YMF825(music_box_ymf825_config_t *out)
+{
+	if ( out == (const music_box_ymf825_config_t *)0 )
+	{
+		return -1;
+	}
+	out->percussion_msg = _music_box_ymf825_config.percussion_msg;
+	out->program_no 	= _music_box_ymf825_config.program_no;
+	return 0;
 }
 
 static void _ymf825_NoteOff(uint8_t ch, uint8_t kk, uint8_t uu) {
@@ -179,7 +220,6 @@ static void _ymf825_NoteOff(uint8_t ch, uint8_t kk, uint8_t uu) {
 }
 
 static void _ymf825_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv) { 
-	
 
 	if (vv != 0x00 ) {
 		uint8_t tone_num = 0;
@@ -190,6 +230,22 @@ static void _ymf825_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv) {
 		uint16_t fnum = 0;
 		uint16_t block = 0;
 
+		if ( ch == PERCUSSION_CHANNEL_NO )
+		{
+			if ( _music_box_ymf825_config.percussion_msg == MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE )
+			{
+				tone_num = YMF825_TONE_NUM_NOISE;
+			}
+			else
+			{// Ignore message of percussion channel.
+				return;
+			}
+		}
+		else
+		{
+			tone_num = YMF825_TONE_NUM_TONE;
+		}
+		
 		for ( i = 0; i < MAX_CH_NUMBER; i++ )
 		{
 			if ( _ch_stat[i].key_stat == YMF825_NOTE_OFF )
@@ -201,18 +257,9 @@ static void _ymf825_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv) {
 				ChVol = (uint8_t)( 31.0F * fvelocity );
 				VoVol = (uint8_t)( 31.0F * (float)(_play_tuning[ch].ChannelVolume & 0x7F) / 127.0F);
 
-				if ( ch == 9 )
-				{
-					fnum = _note_tbl[kk & 0x7F].FNUM;
-					block = _note_tbl[kk & 0x7F].BLOCK;
-					tone_num = YMF825_TONE_NUM_NOISE;
-				}
-				else
-				{
-					fnum = _note_tbl[kk & 0x7F].FNUM;
-					block = _note_tbl[kk & 0x7F].BLOCK;
-					tone_num = YMF825_TONE_NUM_TONE;
-				}
+				fnum = _note_tbl[kk & 0x7F].FNUM;
+				block = _note_tbl[kk & 0x7F].BLOCK;
+
 				// note on
 				YMF825_SelectChannel(i);
 				YMF825_ChangeVoVol(VoVol);
@@ -417,7 +464,7 @@ static void _ChannelKeyOff(uint8_t ch)
 {
 
 	uint8_t tone_num = 0;
-	tone_num = (ch == 9) ? YMF825_TONE_NUM_NOISE : YMF825_TONE_NUM_TONE;
+	tone_num = (ch == PERCUSSION_CHANNEL_NO) ? YMF825_TONE_NUM_NOISE : YMF825_TONE_NUM_TONE;
 
 	for (uint32_t i = 0; i < MAX_CH_NUMBER; i++ )
 	{
