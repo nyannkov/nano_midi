@@ -36,6 +36,7 @@ typedef struct
 {
 	const char *label;
 	int (*command)(int argc, char *argv[]);
+	const char *brief;
 } command_table_t;
 
 #ifdef USE_SINGLE_YMZ294
@@ -67,34 +68,45 @@ static int cmd_hexmode(int argc, char *argv[]);
 static int cmd_ymz294(int argc, char *argv[]);
 #endif
 static int cmd_switch(int argc, char *argv[]);
+static int cmd_usage(int argc, char *argv[]);
 
-static const command_table_t default_command_table[] =
+static const command_table_t command_table[] =
 {
 	{
-		 .label = ":koncha",
+		 .label = "koncha",
 		 .command = cmd_koncha,
+		 .brief = "Show current version."
 	},
 	{
-		 .label = ":test",
+		 .label = "test",
 		 .command = cmd_test,
+		 .brief = "Test of command args."
 	},
 	{
-		 .label = ":hexmode",
+		 .label = "hexmode",
 		 .command = cmd_hexmode,
+		 .brief = "Select the sound IC to be connected in hex mode."
 	},
 #ifdef USE_SINGLE_YMZ294
 	{
-		 .label = ":ymz294",
+		 .label = "ymz294",
 		 .command = cmd_ymz294,
+		 .brief = "Set/Get the playing parameters of YMZ294."
 	},
 	{
-		 .label = ":switch",
+		 .label = "switch",
 		 .command = cmd_switch,
+		 .brief = "Switch the sound driver used for MIDI playing, for each sound IC."
+	},
+	{
+		 .label = "usage",
+		 .command = cmd_usage,
+		 .brief = "Show usage for each command."
 	}
 #endif
 };
 
-static const size_t n_default_command_table = sizeof(default_command_table) / sizeof(default_command_table[0]);
+static const size_t n_command_table = sizeof(command_table) / sizeof(command_table[0]);
 
 int mshell_execute_command(int argc, char *argv[])
 {
@@ -106,13 +118,13 @@ int mshell_execute_command(int argc, char *argv[])
 		return -1;
 	}
 
-	for ( i = 0; i < n_default_command_table; i++ )
+	for ( i = 0; i < n_command_table; i++ )
 	{
-		if ( !strcmp(argv[0], default_command_table[i].label) )
+		if ( !strcmp(&(argv[0])[1], command_table[i].label) )
 		{
-			if ( default_command_table[i].command )
+			if ( command_table[i].command )
 			{
-				cmd_ret = default_command_table[i].command(argc, argv);
+				cmd_ret = command_table[i].command(argc, argv);
 				break;
 			}
 		}
@@ -536,6 +548,34 @@ static int cmd_switch(int argc, char *argv[])
 #endif
 		else
 		{
+		}
+	}
+
+	return 0;
+}
+
+static int cmd_usage(int argc, char *argv[])
+{
+	uint32_t i = 0;
+	uint32_t show_all = 0;
+	const char *search_cmd = "";
+
+	if ( !argv[1] )
+	{
+		show_all = 1;
+		search_cmd = "";
+	}
+	else
+	{
+		show_all = 0;
+		search_cmd = argv[1];
+	}
+
+	for ( i = 0; i < n_command_table; i++ )
+	{
+		if ( !strcmp(search_cmd, command_table[i].label) || show_all )
+		{
+			usb_cdc_printf("%s\t: %s\r\n", command_table[i].label, command_table[i].brief);
 		}
 	}
 
