@@ -158,30 +158,6 @@ MIDI_Handle_t *midi_ymz294_init(void) {
 	_play_tuning[9].ymz294_setting.sel_mixer  	= YMZ294_MIXER_NOISE;
 	_play_tuning[9].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_ENABLE;
 
-#if 0
-	_play_tuning[0].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_ENABLE;
-	_play_tuning[0].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
-	_play_tuning[0].ymz294_setting.env_freq 	= 0x3D09; // 0.5 Hz
-	_play_tuning[0].ymz294_setting.env_shape 	= 0x09;
-
-	_play_tuning[1].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
-	_play_tuning[1].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_DISABLE;
-
-	_play_tuning[2].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
-	_play_tuning[2].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_DISABLE;
-
-	_play_tuning[3].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
-	_play_tuning[3].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_ENABLE;
-	_play_tuning[3].ymz294_setting.env_freq 	= 0x0F42; // 2 Hz
-	_play_tuning[3].ymz294_setting.env_shape 	= 0x09;
-
-	_play_tuning[4].ymz294_setting.sel_mixer	= YMZ294_MIXER_TONE;
-	_play_tuning[4].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_DISABLE;
-
-	_play_tuning[5].ymz294_setting.sel_mixer 	= YMZ294_MIXER_TONE;
-	_play_tuning[5].ymz294_setting.env_mode 	= YMZ294_ENVELOPE_DISABLE;
-#endif
-
 	phMIDI = MIDI_Init(&_ymz294_midi_msg_callbacks);
 
 	return phMIDI;
