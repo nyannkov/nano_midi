@@ -38,11 +38,11 @@ static int cmd_test(int argc, char *argv[]);
 static const command_table_t default_command_table[] =
 {
 	{
-		 .label = ":koncha",
+		 .label = "koncha",
 		 .command = cmd_koncha,
 	},
 	{
-		 .label = ":test",
+		 .label = "test",
 		 .command = cmd_test,
 	},
 };
@@ -61,7 +61,7 @@ __attribute__((weak)) int mshell_execute_command(int argc, char *argv[])
 
 	for ( i = 0; i < n_default_command_table; i++ )
 	{
-		if ( !strcmp(argv[0], default_command_table[i].label) )
+		if ( !strcmp(&(argv[0])[1], default_command_table[i].label) )
 		{
 			if ( default_command_table[i].command )
 			{
