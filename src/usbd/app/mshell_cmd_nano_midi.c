@@ -28,6 +28,7 @@
 #include "mshell_cmd.h"
 #include "midi_cdc_core.h"
 #include "usb_cdc_app.h"
+#include "usb_midi_app.h"
 #include "single_ymz294.h"
 
 
@@ -65,6 +66,7 @@ static int cmd_hexmode(int argc, char *argv[]);
 #ifdef USE_SINGLE_YMZ294
 static int cmd_ymz294(int argc, char *argv[]);
 #endif
+static int cmd_switch(int argc, char *argv[]);
 
 static const command_table_t default_command_table[] =
 {
@@ -84,6 +86,10 @@ static const command_table_t default_command_table[] =
 	{
 		 .label = ":ymz294",
 		 .command = cmd_ymz294,
+	},
+	{
+		 .label = ":switch",
+		 .command = cmd_switch,
 	}
 #endif
 };
@@ -485,3 +491,53 @@ static int32_t try_parse_ymz294_setting(ymz294_cmd_opt_id_t opt_id, const char *
 
 #endif
 
+static int cmd_switch(int argc, char *argv[])
+{
+	if ( argv[1] )
+	{
+		if ( !strcmp(argv[1], "ymf825") )
+		{
+			ymf825_sound_driver_t sound_driver = NUM_OF_YMF825_SOUND_DRIVER;
+			const char *selected_driver_name = "";
+			if ( argv[2] )
+			{
+				if ( !strcmp(argv[2], "mode4") )
+				{
+					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MODE4);
+				}
+				else if ( !strcmp(argv[2], "musicbox") )
+				{
+					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MUSIC_BOX);
+				}
+				else
+				{
+				}
+			}
+			sound_driver = get_selected_ymf825_sound_driver();
+			if ( sound_driver == YMF825_SOUND_DRIVER_MODE4 )
+			{
+				selected_driver_name = "mode4";
+			}
+			else if ( sound_driver == YMF825_SOUND_DRIVER_MUSIC_BOX )
+			{
+				selected_driver_name = "musicbox";
+			}
+			else
+			{
+			}
+			usb_cdc_printf("sound driver: %s\r\n", selected_driver_name);
+
+		}
+#ifdef USE_SINGLE_YMZ294
+		else if ( !strcmp(argv[1], "ymz294") )
+		{
+			usb_cdc_printf("sound driver: single\r\n"); // Modify as needed.
+		}
+#endif
+		else
+		{
+		}
+	}
+
+	return 0;
+}
