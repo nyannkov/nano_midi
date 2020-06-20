@@ -1,7 +1,7 @@
 ﻿/*
   MIT License
 
-  Copyright (c) 2019 nyannkov
+  Copyright (c) 2020 nyannkov
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,25 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
-#ifndef __YMF825_H__
-#define __YMF825_H__
+#ifndef __MUSIC_BOX_YMF825_H__
+#define __MUSIC_BOX_YMF825_H__
 
-#include <stdint.h>
-#include <stddef.h>
+#include "midi.h"
 
-extern int32_t YMF825_Init(void);
-extern void YMF825_DeInit(void);
+#define MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE  0
+#define MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE  1
 
-extern void YMF825_SelectChannel(uint8_t ch);
-extern void YMF825_SelectNoteNumber(uint16_t fnum, uint16_t block);
-extern void YMF825_ChangeVoVol(uint8_t VoVol); 
-extern void YMF825_ChangeChVol(uint8_t ChVol);
-extern void YMF825_ChangeMASTER_VOL(uint8_t master_vol);
-extern void YMF825_ChangePitch(uint16_t INT, uint16_t FRAC);
-extern void YMF825_KeyOn(uint8_t tone_num);
-extern void YMF825_KeyOff(uint8_t tone_num);
-extern void YMF825_SetToneParameter(uint8_t tone_matrix[16][30]);
-extern void YMF825_SetToneParameterEx(uint8_t tone_matrix[][30], uint8_t block_num);
+#pragma pack(1)
+typedef struct
+{
+  uint8_t percussion_msg; // accept or ignore
+  uint8_t program_no;     // Program number to use. The range is [1-128].
+} music_box_ymf825_config_t;
+#pragma pack()
 
-extern void if_write(uint8_t addr, const uint8_t* data, uint16_t size);
-extern void if_s_write(uint8_t addr,uint8_t data);
-extern uint8_t if_s_read(uint8_t addr);
+extern MIDI_Handle_t *MIDI_MUSIC_BOX_YMF825_Init(void);
+extern void MIDI_MUSIC_BOX_YMF825_DeInit(MIDI_Handle_t *phMIDI);
+extern int32_t SetConfig_MUSIC_BOX_YMF825(const music_box_ymf825_config_t *cfg);
+extern int32_t GetConfig_MUSIC_BOX_YMF825(music_box_ymf825_config_t *out);
 
-#endif // __YMF825_H__
+#endif /* __MUSIC_BOX_YMF825_H__ */
