@@ -30,6 +30,7 @@
 #include "usb_cdc_app.h"
 #include "usb_midi_app.h"
 #include "single_ymz294.h"
+#include "music_box_ymf825.h"
 
 
 typedef struct
@@ -69,6 +70,7 @@ static int cmd_ymz294(int argc, char *argv[]);
 #endif
 static int cmd_switch(int argc, char *argv[]);
 static int cmd_usage(int argc, char *argv[]);
+static int cmd_ymf825(int argc, char *argv[]);
 
 static const command_table_t command_table[] =
 {
@@ -102,6 +104,11 @@ static const command_table_t command_table[] =
 		 .label = "usage",
 		 .command = cmd_usage,
 		 .brief = "Show usage for each command."
+	},
+	{
+		 .label = "ymf825",
+		 .command = cmd_ymf825,
+		 .brief = "Set/Get the playing parameters of YMF825."
 	}
 #endif
 };
@@ -577,6 +584,64 @@ static int cmd_usage(int argc, char *argv[])
 		{
 			usb_cdc_printf("%s\t: %s\r\n", command_table[i].label, command_table[i].brief);
 		}
+	}
+
+	return 0;
+}
+
+static int cmd_ymf825(int argc, char *argv[])
+{
+	ymf825_sound_driver_t sound_driver = NUM_OF_YMF825_SOUND_DRIVER;
+	sound_driver = get_selected_ymf825_sound_driver();
+
+	if ( sound_driver == YMF825_SOUND_DRIVER_MODE4 )
+	{
+		// Add code as needed.
+	}
+	else if ( sound_driver == YMF825_SOUND_DRIVER_MUSIC_BOX )
+	{
+		music_box_ymf825_config_t config;
+ 		GetConfig_MUSIC_BOX_YMF825(&config);
+		if ( !strcmp(argv[1], "perc") )
+		{
+			if ( argv[2] )
+			{
+				if ( !strcmp(argv[2], "enable") )
+				{
+					config.percussion_msg = MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+				else if ( !strcmp(argv[2], "disable") )
+				{
+					config.percussion_msg = MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+				else
+				{
+				}
+			}
+			usb_cdc_printf("Percussion: %s\r\n", config.percussion_msg == MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE ? "disable" : "enable" );
+		}
+		else if ( !strcmp(argv[1], "prog") )
+		{
+			if ( argv[2] )
+			{
+				uint32_t program_no = 0;
+				program_no = strtoul(argv[2], NULL, 0);
+				if ( 1 <= program_no && program_no <= 128 )
+				{
+					config.program_no = (uint8_t)program_no;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+			}
+			usb_cdc_printf("Program No: %u\r\n", config.program_no);
+		}
+		else
+		{
+		}
+	}
+	else
+	{
 	}
 
 	return 0;

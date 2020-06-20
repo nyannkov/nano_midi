@@ -392,6 +392,10 @@ static void _ymf825_ControlChange(uint8_t ch, uint8_t cc, uint8_t vv) {
 		case 121:// Reset All Controller
 		{
 			_ChannelKeyOff(ch);
+			for (uint32_t i = 0; i < MAX_CH_NUMBER; i++ )
+			{// Clear all YMF825 key state.
+				_ch_stat[i].key_stat = YMF825_NOTE_OFF;
+			}
 		}
 		break;
 
