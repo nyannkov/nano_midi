@@ -127,7 +127,7 @@ int mshell_execute_command(int argc, char *argv[])
 
 	for ( i = 0; i < n_command_table; i++ )
 	{
-		if ( !strcmp(&(argv[0])[1], command_table[i].label) )
+		if ( !strcmp(argv[0], command_table[i].label) )
 		{
 			if ( command_table[i].command )
 			{
