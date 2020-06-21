@@ -26,7 +26,7 @@
 #include "main.h"
 #include "mshell_conf.h"
 #include "mshell_cmd.h"
-#include "midi_cdc_core.h"
+#include "../usbd_core/midi_cdc_core.h"
 #include "usb_cdc_app.h"
 #include "usb_midi_app.h"
 #include "single_ymz294.h"
