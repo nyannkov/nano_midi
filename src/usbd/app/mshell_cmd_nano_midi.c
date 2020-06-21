@@ -95,6 +95,7 @@ static const command_table_t command_table[] =
 		 .command = cmd_ymz294,
 		 .brief = "Set/Get the playing parameters of YMZ294."
 	},
+#endif
 	{
 		 .label = "switch",
 		 .command = cmd_switch,
@@ -110,7 +111,6 @@ static const command_table_t command_table[] =
 		 .command = cmd_ymf825,
 		 .brief = "Set/Get the playing parameters of YMF825."
 	}
-#endif
 };
 
 static const size_t n_command_table = sizeof(command_table) / sizeof(command_table[0]);
