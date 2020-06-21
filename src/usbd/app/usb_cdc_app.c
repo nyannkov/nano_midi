@@ -23,7 +23,7 @@
 */
 #include "usb_cdc_app.h"
 #include "mshell.h"
-#include "usbd/midi_cdc_core.h"
+#include "../usbd_core/midi_cdc_core.h"
 #include "ymf825.h"
 #ifdef USE_SINGLE_YMZ294
 #include "ymz294.h"
