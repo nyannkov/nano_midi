@@ -524,7 +524,7 @@ static int cmd_switch(int argc, char *argv[])
 				{
 					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MODE4);
 				}
-				else if ( !strcmp(argv[2], "musicbox") )
+				else if ( !strcmp(argv[2], "mbox") )
 				{
 					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MUSIC_BOX);
 				}
@@ -539,7 +539,7 @@ static int cmd_switch(int argc, char *argv[])
 			}
 			else if ( sound_driver == YMF825_SOUND_DRIVER_MUSIC_BOX )
 			{
-				selected_driver_name = "musicbox";
+				selected_driver_name = "mbox";
 			}
 			else
 			{
@@ -606,12 +606,12 @@ static int cmd_ymf825(int argc, char *argv[])
 		{
 			if ( argv[2] )
 			{
-				if ( !strcmp(argv[2], "enable") )
+				if ( !strcmp(argv[2], "on") )
 				{
 					config.percussion_msg = MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE;
 					SetConfig_MUSIC_BOX_YMF825(&config);
 				}
-				else if ( !strcmp(argv[2], "disable") )
+				else if ( !strcmp(argv[2], "on") )
 				{
 					config.percussion_msg = MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE;
 					SetConfig_MUSIC_BOX_YMF825(&config);
@@ -620,7 +620,7 @@ static int cmd_ymf825(int argc, char *argv[])
 				{
 				}
 			}
-			usb_cdc_printf("Percussion: %s\r\n", config.percussion_msg == MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE ? "disable" : "enable" );
+			usb_cdc_printf("Percussion: %s\r\n", config.percussion_msg == MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE ? "off" : "on" );
 		}
 		else if ( !strcmp(argv[1], "prog") )
 		{
