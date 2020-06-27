@@ -34,6 +34,8 @@ extern const uint8_t ymf825_tone_table[128][30];
 #define YMF825_NOTE_OFF         0 
 #define YMF825_NOTE_ON          1
 
+#define MAX_RELEASE_COUNTDOWN	15
+
 #define MAX_TONE_NUMBER		2
 #define MAX_CH_NUMBER		16
 #define NUM_OF_TONE_CFG		30
@@ -62,7 +64,8 @@ typedef struct
 	uint8_t key_stat; // current key state (on/off)
 	uint8_t note_no;  // note number
 	uint8_t mid_ch;   // midi channel
-} ymz825_ch_stat_t;
+	uint8_t release_cnt; // release cowntdown
+} ymf825_ch_stat_t;
 #pragma pack()
 
 static music_box_ymf825_config_t _music_box_ymf825_config = {
@@ -80,24 +83,24 @@ static const uint8_t _tone_noise[NUM_OF_TONE_CFG] ={
 
 static MIDI_PlayTuning_t _play_tuning[MAX_CH_NUMBER];
 static uint8_t _ch_program_tbl[MAX_TONE_NUMBER][NUM_OF_TONE_CFG];
-static ymz825_ch_stat_t _ch_stat[MAX_CH_NUMBER] = 
+static ymf825_ch_stat_t _ch_stat[MAX_CH_NUMBER] = 
 {
-	{YMF825_NOTE_OFF, 0, 0},
-	{YMF825_NOTE_OFF, 0, 0},
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
-	{YMF825_NOTE_OFF, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0},
+	{YMF825_NOTE_OFF, 0, 0, 0},
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
+	{YMF825_NOTE_OFF, 0, 0, 0}, 
 };
 
 static void _ResetChannelSetting(uint8_t ch);
@@ -201,6 +204,15 @@ static void _ymf825_NoteOff(uint8_t ch, uint8_t kk, uint8_t uu) {
 
 	for ( i = 0; i < MAX_CH_NUMBER; i++ )
 	{
+		if (( _ch_stat[i].key_stat == YMF825_NOTE_OFF )
+		&&  ( _ch_stat[i].release_cnt != 0 ))
+		{
+			_ch_stat[i].release_cnt--;
+		}
+	}
+
+	for ( i = 0; i < MAX_CH_NUMBER; i++ )
+	{
 		if (( _ch_stat[i].key_stat  == YMF825_NOTE_ON )
 		&&  ( _ch_stat[i].note_no  == kk )
 		&&  ( _ch_stat[i].mid_ch == ch ))
@@ -214,6 +226,7 @@ static void _ymf825_NoteOff(uint8_t ch, uint8_t kk, uint8_t uu) {
 
 			// update a channel status.
 			_ch_stat[i].key_stat = YMF825_NOTE_OFF;
+			_ch_stat[i].release_cnt = MAX_RELEASE_COUNTDOWN;
 			break;
 		}
 	}
@@ -223,6 +236,8 @@ static void _ymf825_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv) {
 
 	if (vv != 0x00 ) {
 		uint8_t tone_num = 0;
+		ymf825_ch_stat_t *p_tentative = (ymf825_ch_stat_t *)0; 
+		uint8_t next_note_on_ch = 0;
 		uint32_t i = 0;
 		float fvelocity = 0.0F;
 		uint8_t ChVol = 0;
@@ -245,34 +260,50 @@ static void _ymf825_NoteOn(uint8_t ch, uint8_t kk, uint8_t vv) {
 		{
 			tone_num = YMF825_TONE_NUM_TONE;
 		}
-		
+
 		for ( i = 0; i < MAX_CH_NUMBER; i++ )
 		{
 			if ( _ch_stat[i].key_stat == YMF825_NOTE_OFF )
-			{// note on
-
-				fvelocity  = ((float)(vv & 0x7F))/127.0F;
-				fvelocity *= ((float)(_play_tuning[ch].Expression & 0x7F)) / 127.0F;
-
-				ChVol = (uint8_t)( 31.0F * fvelocity );
-				VoVol = (uint8_t)( 31.0F * (float)(_play_tuning[ch].ChannelVolume & 0x7F) / 127.0F);
-
-				fnum = _note_tbl[kk & 0x7F].FNUM;
-				block = _note_tbl[kk & 0x7F].BLOCK;
-
-				// note on
-				YMF825_SelectChannel(i);
-				YMF825_ChangeVoVol(VoVol);
-				YMF825_ChangeChVol(ChVol);
-				YMF825_SelectNoteNumber(fnum, block);
-				YMF825_KeyOn(tone_num);
-
-				// update a channel status.
-				_ch_stat[i].key_stat = YMF825_NOTE_ON;
-				_ch_stat[i].note_no = kk;
-				_ch_stat[i].mid_ch = ch;
-				break;
+			{
+				if ( p_tentative == (ymf825_ch_stat_t *) 0)
+				{
+					p_tentative = &_ch_stat[i];
+					next_note_on_ch = i;
+				}
+				else
+				{
+					if ( p_tentative->release_cnt > _ch_stat[i].release_cnt )
+					{
+						p_tentative = &_ch_stat[i];
+						next_note_on_ch = i;
+					}
+				}
 			}
+		}
+
+		if ( p_tentative )
+		{// note on
+
+			fvelocity  = ((float)(vv & 0x7F))/127.0F;
+			fvelocity *= ((float)(_play_tuning[ch].Expression & 0x7F)) / 127.0F;
+
+			ChVol = (uint8_t)( 31.0F * fvelocity );
+			VoVol = (uint8_t)( 31.0F * (float)(_play_tuning[ch].ChannelVolume & 0x7F) / 127.0F);
+
+			fnum = _note_tbl[kk & 0x7F].FNUM;
+			block = _note_tbl[kk & 0x7F].BLOCK;
+
+			// note on
+			YMF825_SelectChannel(next_note_on_ch);
+			YMF825_ChangeVoVol(VoVol);
+			YMF825_ChangeChVol(ChVol);
+			YMF825_SelectNoteNumber(fnum, block);
+			YMF825_KeyOn(tone_num);
+
+			// update a channel status.
+			p_tentative->key_stat = YMF825_NOTE_ON;
+			p_tentative->note_no = kk;
+			p_tentative->mid_ch = ch;
 		}
 	}
 	else {
@@ -474,6 +505,7 @@ static void _ChannelKeyOff(uint8_t ch)
 			YMF825_SelectChannel(i);
 			YMF825_KeyOff(tone_num);
 			_ch_stat[i].key_stat = YMF825_NOTE_OFF;
+			_ch_stat[i].release_cnt = 0;
 		}
 	}
 }
