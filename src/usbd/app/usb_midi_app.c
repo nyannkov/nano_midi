@@ -67,8 +67,8 @@ static sound_driver_api_t lst_ymf825_api[NUM_OF_YMF825_SOUND_DRIVER] =
 		MIDI_MUSIC_BOX_YMF825_DeInit
 	}
 };
-static ymf825_sound_driver_t selected_ymf825_sound_driver = YMF825_SOUND_DRIVER_MUSIC_BOX;
-static ymf825_sound_driver_t request_ymf825_sound_driver  = YMF825_SOUND_DRIVER_MUSIC_BOX;
+static ymf825_sound_driver_t ymf825_sound_driver = YMF825_SOUND_DRIVER_MUSIC_BOX;
+static ymf825_sound_driver_t bak_ymf825_sound_driver = YMF825_SOUND_DRIVER_MUSIC_BOX;
 
 static MIDI_Handle_t *ph_midi_ymf825;
 #ifdef USE_SINGLE_YMZ294
@@ -85,9 +85,8 @@ void init_usb_midi_app(void)
 	init_midi_handle_list();
 
 	// Initialize sound driver of YMF825.
-	selected_ymf825_sound_driver = YMF825_SOUND_DRIVER_MUSIC_BOX;
-	request_ymf825_sound_driver = selected_ymf825_sound_driver;
-	ph_midi_ymf825 = lst_ymf825_api[selected_ymf825_sound_driver].midi_init();
+	ymf825_sound_driver = YMF825_SOUND_DRIVER_MUSIC_BOX;
+	ph_midi_ymf825 = lst_ymf825_api[ymf825_sound_driver].midi_init();
 	USB_MIDI_APP_ASSERT( ph_midi_ymf825 != (MIDI_Handle_t *)0 );
 
 #ifdef USE_SINGLE_YMZ294
@@ -104,12 +103,12 @@ int32_t usb_midi_proc(const uint8_t *mid_msg,  size_t len)
 	usb_midi_event_packet_t *packet = (usb_midi_event_packet_t *)0;
 	uint8_t cin = 0;
 
-	if ( request_ymf825_sound_driver != selected_ymf825_sound_driver )
+	if ( bak_ymf825_sound_driver != ymf825_sound_driver )
 	{// Switch sound driver of YMF825
-		lst_ymf825_api[selected_ymf825_sound_driver].midi_deinit(ph_midi_ymf825);
-		ph_midi_ymf825 = lst_ymf825_api[request_ymf825_sound_driver].midi_init();
+		lst_ymf825_api[ymf825_sound_driver].midi_deinit(ph_midi_ymf825);
+		ph_midi_ymf825 = lst_ymf825_api[ymf825_sound_driver].midi_init();
 		USB_MIDI_APP_ASSERT( ph_midi_ymf825 != (MIDI_Handle_t *)0 );
-		selected_ymf825_sound_driver = request_ymf825_sound_driver;
+		bak_ymf825_sound_driver = ymf825_sound_driver;
 	}
 
 	len &= ~0x3UL; // 4 bytes alignment.
@@ -136,13 +135,13 @@ int32_t switch_ymf825_sound_driver(ymf825_sound_driver_t driver)
 	{
 		return -1;
 	}
-	request_ymf825_sound_driver = driver;
+	ymf825_sound_driver = driver;
 	return 0;
 }
 
 ymf825_sound_driver_t get_selected_ymf825_sound_driver(void)
 {
-	return selected_ymf825_sound_driver;
+	return ymf825_sound_driver;
 }
 
 MIDI_Handle_t *MIDI_Alloc(void)
