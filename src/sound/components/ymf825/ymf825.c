@@ -37,9 +37,6 @@
 
 #define delay(x) 				delay100us(x*10) // unit: 1msec
 
-static uint8_t tone_data_head[1] ={
-	(0x80+16),//header
-};
 static uint8_t tone_data_tail[4] ={
 	0x80,0x03,0x81,0x80,
 };
@@ -237,6 +234,7 @@ void YMF825_ChangePitch(uint16_t INT, uint16_t FRAC) {
 
 void YMF825_SetToneParameter(uint8_t tone_matrix[16][30]) {
 
+	uint8_t tone_data_head = 0x80|0x10;
 	uint8_t addr = 0x07;
 	int32_t i = 0;
 
@@ -245,8 +243,28 @@ void YMF825_SetToneParameter(uint8_t tone_matrix[16][30]) {
 	if_s_write( 0x08, 0x00 );
 	set_ss_low();
 	spi_transmit(&addr, 1, SPI_TRANSMIT_TIMEOUT);
-	spi_transmit(&tone_data_head[0], sizeof(tone_data_head), SPI_TRANSMIT_TIMEOUT);
+	spi_transmit(&tone_data_head, 1, SPI_TRANSMIT_TIMEOUT);
 	for ( i = 0; i < 16; i++ ) {
+		spi_transmit(tone_matrix[i], 30, SPI_TRANSMIT_TIMEOUT);
+	}
+	spi_transmit(&tone_data_tail[0], sizeof(tone_data_tail), SPI_TRANSMIT_TIMEOUT);
+	set_ss_high();	
+
+}
+
+void YMF825_SetToneParameterEx(uint8_t tone_matrix[][30], uint8_t block_num) {
+
+	uint8_t addr = 0x07;
+	int32_t i = 0;
+	uint8_t tone_data_head = 0x80|block_num;
+
+	if_s_write( 0x08, 0xF6 );
+	delay(1);
+	if_s_write( 0x08, 0x00 );
+	set_ss_low();
+	spi_transmit(&addr, 1, SPI_TRANSMIT_TIMEOUT);
+	spi_transmit(&tone_data_head, sizeof(tone_data_head), SPI_TRANSMIT_TIMEOUT);
+	for ( i = 0; i < block_num; i++ ) {
 		spi_transmit(tone_matrix[i], 30, SPI_TRANSMIT_TIMEOUT);
 	}
 	spi_transmit(&tone_data_tail[0], sizeof(tone_data_tail), SPI_TRANSMIT_TIMEOUT);

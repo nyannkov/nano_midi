@@ -38,11 +38,11 @@ static int cmd_test(int argc, char *argv[]);
 static const command_table_t default_command_table[] =
 {
 	{
-		 .label = ":koncha",
+		 .label = "koncha",
 		 .command = cmd_koncha,
 	},
 	{
-		 .label = ":test",
+		 .label = "test",
 		 .command = cmd_test,
 	},
 };

@@ -27,7 +27,17 @@
 #include <stdint.h>
 #include <stddef.h>
 
+typedef enum
+{
+  YMF825_SOUND_DRIVER_MODE4 = 0,
+  YMF825_SOUND_DRIVER_MUSIC_BOX,
+  NUM_OF_YMF825_SOUND_DRIVER
+} ymf825_sound_driver_t;
+
+
 extern void    init_usb_midi_app(void);
 extern int32_t usb_midi_proc(const uint8_t *mid_msg,  size_t len);
+extern int32_t switch_ymf825_sound_driver(ymf825_sound_driver_t driver);
+extern ymf825_sound_driver_t get_selected_ymf825_sound_driver(void);
 
 #endif//__USB_MIDI_H__

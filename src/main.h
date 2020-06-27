@@ -24,6 +24,6 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#define NANO_MIDI_VERSION	"2.0.0"
+#define NANO_MIDI_VERSION	"2.1.0"
 
 #endif//__MAIN_H__

@@ -26,15 +26,18 @@
 #include "main.h"
 #include "mshell_conf.h"
 #include "mshell_cmd.h"
-#include "midi_cdc_core.h"
+#include "../usbd_core/midi_cdc_core.h"
 #include "usb_cdc_app.h"
+#include "usb_midi_app.h"
 #include "single_ymz294.h"
+#include "music_box_ymf825.h"
 
 
 typedef struct
 {
 	const char *label;
 	int (*command)(int argc, char *argv[]);
+	const char *brief;
 } command_table_t;
 
 #ifdef USE_SINGLE_YMZ294
@@ -65,30 +68,52 @@ static int cmd_hexmode(int argc, char *argv[]);
 #ifdef USE_SINGLE_YMZ294
 static int cmd_ymz294(int argc, char *argv[]);
 #endif
+static int cmd_switch(int argc, char *argv[]);
+static int cmd_usage(int argc, char *argv[]);
+static int cmd_ymf825(int argc, char *argv[]);
 
-static const command_table_t default_command_table[] =
+static const command_table_t command_table[] =
 {
 	{
-		 .label = ":koncha",
+		 .label = "koncha",
 		 .command = cmd_koncha,
+		 .brief = "Show current version."
 	},
 	{
-		 .label = ":test",
+		 .label = "test",
 		 .command = cmd_test,
+		 .brief = "Test of command args."
 	},
 	{
-		 .label = ":hexmode",
+		 .label = "hexmode",
 		 .command = cmd_hexmode,
+		 .brief = "Select the sound IC to be connected in hex mode."
 	},
 #ifdef USE_SINGLE_YMZ294
 	{
-		 .label = ":ymz294",
+		 .label = "ymz294",
 		 .command = cmd_ymz294,
-	}
+		 .brief = "Set/Get the playing parameters of YMZ294."
+	},
 #endif
+	{
+		 .label = "switch",
+		 .command = cmd_switch,
+		 .brief = "Switch the sound driver used for MIDI playing, for each sound IC."
+	},
+	{
+		 .label = "usage",
+		 .command = cmd_usage,
+		 .brief = "Show usage for each command."
+	},
+	{
+		 .label = "ymf825",
+		 .command = cmd_ymf825,
+		 .brief = "Set/Get the playing parameters of YMF825."
+	}
 };
 
-static const size_t n_default_command_table = sizeof(default_command_table) / sizeof(default_command_table[0]);
+static const size_t n_command_table = sizeof(command_table) / sizeof(command_table[0]);
 
 int mshell_execute_command(int argc, char *argv[])
 {
@@ -100,13 +125,13 @@ int mshell_execute_command(int argc, char *argv[])
 		return -1;
 	}
 
-	for ( i = 0; i < n_default_command_table; i++ )
+	for ( i = 0; i < n_command_table; i++ )
 	{
-		if ( !strcmp(argv[0], default_command_table[i].label) )
+		if ( !strcmp(argv[0], command_table[i].label) )
 		{
-			if ( default_command_table[i].command )
+			if ( command_table[i].command )
 			{
-				cmd_ret = default_command_table[i].command(argc, argv);
+				cmd_ret = command_table[i].command(argc, argv);
 				break;
 			}
 		}
@@ -485,3 +510,139 @@ static int32_t try_parse_ymz294_setting(ymz294_cmd_opt_id_t opt_id, const char *
 
 #endif
 
+static int cmd_switch(int argc, char *argv[])
+{
+	if ( argv[1] )
+	{
+		if ( !strcmp(argv[1], "ymf825") )
+		{
+			ymf825_sound_driver_t sound_driver = NUM_OF_YMF825_SOUND_DRIVER;
+			const char *selected_driver_name = "";
+			if ( argv[2] )
+			{
+				if ( !strcmp(argv[2], "mode4") )
+				{
+					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MODE4);
+				}
+				else if ( !strcmp(argv[2], "mbox") )
+				{
+					switch_ymf825_sound_driver(YMF825_SOUND_DRIVER_MUSIC_BOX);
+				}
+				else
+				{
+				}
+			}
+			sound_driver = get_selected_ymf825_sound_driver();
+			if ( sound_driver == YMF825_SOUND_DRIVER_MODE4 )
+			{
+				selected_driver_name = "mode4";
+			}
+			else if ( sound_driver == YMF825_SOUND_DRIVER_MUSIC_BOX )
+			{
+				selected_driver_name = "mbox";
+			}
+			else
+			{
+			}
+			usb_cdc_printf("sound driver: %s\r\n", selected_driver_name);
+
+		}
+#ifdef USE_SINGLE_YMZ294
+		else if ( !strcmp(argv[1], "ymz294") )
+		{
+			usb_cdc_printf("sound driver: single\r\n"); // Modify as needed.
+		}
+#endif
+		else
+		{
+		}
+	}
+
+	return 0;
+}
+
+static int cmd_usage(int argc, char *argv[])
+{
+	uint32_t i = 0;
+	uint32_t show_all = 0;
+	const char *search_cmd = "";
+
+	if ( !argv[1] )
+	{
+		show_all = 1;
+		search_cmd = "";
+	}
+	else
+	{
+		show_all = 0;
+		search_cmd = argv[1];
+	}
+
+	for ( i = 0; i < n_command_table; i++ )
+	{
+		if ( !strcmp(search_cmd, command_table[i].label) || show_all )
+		{
+			usb_cdc_printf("%s\t: %s\r\n", command_table[i].label, command_table[i].brief);
+		}
+	}
+
+	return 0;
+}
+
+static int cmd_ymf825(int argc, char *argv[])
+{
+	ymf825_sound_driver_t sound_driver = NUM_OF_YMF825_SOUND_DRIVER;
+	sound_driver = get_selected_ymf825_sound_driver();
+
+	if ( sound_driver == YMF825_SOUND_DRIVER_MODE4 )
+	{
+		// Add code as needed.
+	}
+	else if ( sound_driver == YMF825_SOUND_DRIVER_MUSIC_BOX )
+	{
+		music_box_ymf825_config_t config;
+ 		GetConfig_MUSIC_BOX_YMF825(&config);
+		if ( !strcmp(argv[1], "perc") )
+		{
+			if ( argv[2] )
+			{
+				if ( !strcmp(argv[2], "on") )
+				{
+					config.percussion_msg = MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+				else if ( !strcmp(argv[2], "on") )
+				{
+					config.percussion_msg = MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+				else
+				{
+				}
+			}
+			usb_cdc_printf("Percussion: %s\r\n", config.percussion_msg == MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE ? "off" : "on" );
+		}
+		else if ( !strcmp(argv[1], "prog") )
+		{
+			if ( argv[2] )
+			{
+				uint32_t program_no = 0;
+				program_no = strtoul(argv[2], NULL, 0);
+				if ( 1 <= program_no && program_no <= 128 )
+				{
+					config.program_no = (uint8_t)program_no;
+					SetConfig_MUSIC_BOX_YMF825(&config);
+				}
+			}
+			usb_cdc_printf("Program No: %u\r\n", config.program_no);
+		}
+		else
+		{
+		}
+	}
+	else
+	{
+	}
+
+	return 0;
+}

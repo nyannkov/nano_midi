@@ -17,6 +17,7 @@ SOUND_MIDI_DIR      = join(SOUND_DIR, "midi")
 SOUND_COMPONENT_DIR = join(SOUND_DIR, "components")
 USBD_DIR            = join(SRC_DIR, "usbd")
 USBD_APP_DIR        = join(USBD_DIR, "app")
+USBD_CORE_DIR       = join(USBD_DIR, "usbd_core")
 PERIPH_DRIV_DIR     = join(SRC_DIR, "GD32VF103_Firmware_Library_V1.0.1", "Firmware", "GD32VF103_standard_peripheral")
 USBFS_DRIV_DIR      = join(SRC_DIR, "GD32VF103_Firmware_Library_V1.0.1", "Firmware", "GD32VF103_usbfs_driver") 
 RISCV_DRIV_DIR      = join(SRC_DIR, "GD32VF103_Firmware_Library_V1.0.1", "Firmware", "RISCV", "drivers")
@@ -38,6 +39,7 @@ env.Append(
         join(PROJ_DIR, SOUND_COMPONENT_DIR, "ymz294"),
         join(PROJ_DIR, USBD_DIR),
         join(PROJ_DIR, USBD_APP_DIR),
+        join(PROJ_DIR, USBD_CORE_DIR),
         join(PROJ_DIR, PERIPH_DRIV_DIR),
         join(PROJ_DIR, PERIPH_DRIV_DIR, "Include"),
         join(PROJ_DIR, USBFS_DRIV_DIR),

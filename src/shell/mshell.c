@@ -127,11 +127,11 @@ int32_t mshell_proc(const uint8_t *recv_dat, size_t recv_len)
 		p_str = &_char_array.string[_char_array.length];
 		for ( i = 0; i < recv_len; i++ )
 		{
-			if ( recv_dat[i] == '\n' )
+			if ( recv_dat[i] == '\r' )
 			{
 				continue;
 			}
-			else if ( recv_dat[i] == '\r' )
+			else if ( recv_dat[i] == '\n' )
 			{
 				p_str[i] = '\0'; 
 				if ( _char_array.string[0] == ':')
@@ -221,7 +221,7 @@ static int32_t parse_command_args(CommandArgs_t *args, CharArray_t *p_char_array
 
 	args->argc = 0;
 
-	for ( i = 0; i < p_char_array->length; i++ )
+	for ( i = 1; i < p_char_array->length; i++ )
 	{
 		if ( ( p_char_array->string[i] == ' ' ) || ( p_char_array->string[i] == '\t' ) )
 		{
