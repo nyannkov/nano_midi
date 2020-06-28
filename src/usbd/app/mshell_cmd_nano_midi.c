@@ -611,7 +611,7 @@ static int cmd_ymf825(int argc, char *argv[])
 					config.percussion_msg = MUSIC_BOX_YMF825_ACCEPT_PERCUSSION_MESSAGE;
 					SetConfig_MUSIC_BOX_YMF825(&config);
 				}
-				else if ( !strcmp(argv[2], "on") )
+				else if ( !strcmp(argv[2], "off") )
 				{
 					config.percussion_msg = MUSIC_BOX_YMF825_IGNORE_PERCUSSION_MESSAGE;
 					SetConfig_MUSIC_BOX_YMF825(&config);
